@@ -399,6 +399,27 @@ RSpec.describe OpenAPIParser::SchemaValidator do
       end
     end
 
+    describe 'mixed type with nullable' do
+      context 'nullable true' do
+        subject { request_operation.validate_request_body(content_type, { 'one_of_with_nullable' => params }) }
+        let(:params) { nil }
+
+        it { expect(subject).not_to eq nil }
+      end
+
+      context 'nullable false' do
+        subject { request_operation.validate_request_body(content_type, { 'one_of_data' => params }) }
+        let(:params) { nil }
+
+        it do
+          expect { subject }.to raise_error do |e|
+            expect(e).to be_kind_of(OpenAPIParser::NotNullError)
+            expect(e.message).to end_with("does not allow null values")
+          end
+        end
+      end
+    end
+
     it 'unknown param' do
       expect { request_operation.validate_request_body(content_type, { 'unknown' => 1 }) }.to raise_error do |e|
         expect(e).to be_kind_of(OpenAPIParser::NotExistPropertyDefinition)
